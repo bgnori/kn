@@ -1,12 +1,12 @@
 
-#ifndef NKOBJECT_H
-#define NKOBJECT_H
+#ifndef KNOBJECT_H
+#define KNOBJECT_H
 
-typedef int nkObject;
+typedef int knObject;
 
-#define XNewObject(TYPE) ((TYPE*)_XNewObject((sizeof(TYPE))))
-nkObject* _XNewObject(int size);
-#define XDeleteObject(self) _XDeleteObject((Object*)(self))
-void _XDeleteObject(nkObject* p);
+#define XNewObject(TYPE) ((TYPE*)_XNewknObject((sizeof(TYPE))))
+knObject* _XNewknObject(int size);
+#define XDeleteknObject(self) _XDeleteObject((knObject*)(self))
+void _XDeleteknObject(knObject* p);
 
 #endif

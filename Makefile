@@ -2,7 +2,7 @@
 header = src/header
 modules = build/module
 
-tests = test/first.log test/nkobject.log 
+tests = test/first.log test/knobject.log 
 
 test:  $(tests)
 
@@ -18,12 +18,12 @@ build/test/first: src/test/first.c src/test/minuint.h build/module/first.o src/h
 test/first.log: build/test/first
 	./build/test/first >& test/first.log
 
-build/module/nkobject.o: src/module/nkobject.c
-	gcc -I$(header) -c src/module/nkobject.c -o build/module/nkobject.o
+build/module/knobject.o: src/module/knobject.c
+	gcc -I$(header) -c src/module/knobject.c -o build/module/knobject.o
 
-build/test/nkobject: src/test/nkobject.c src/test/minuint.h build/module/nkobject.o src/header/nkobject.h
-	gcc -I$(header) -L$(modules) src/test/nkobject.c -o build/test/nkobject build/module/nkobject.o
+build/test/knobject: src/test/knobject.c src/test/minuint.h build/module/knobject.o src/header/knobject.h
+	gcc -I$(header) -L$(modules) src/test/knobject.c -o build/test/knobject build/module/knobject.o
 
-test/nkobject.log: build/test/nkobject
-	./build/test/nkobject >& test/nkobject.log
+test/knobject.log: build/test/knobject
+	./build/test/knobject >& test/knobject.log
 
