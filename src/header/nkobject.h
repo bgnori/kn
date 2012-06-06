@@ -1,7 +1,12 @@
 
-#ifndef FIRST_H
-#define FIRST_H
+#ifndef NKOBJECT_H
+#define NKOBJECT_H
 
-int hoge(void);
+typedef int nkObject;
+
+#define XNewObject(TYPE) ((TYPE*)_XNewObject((sizeof(TYPE))))
+nkObject* _XNewObject(int size);
+#define XDeleteObject(self) _XDeleteObject((Object*)(self))
+void _XDeleteObject(nkObject* p);
 
 #endif

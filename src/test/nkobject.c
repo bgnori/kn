@@ -1,14 +1,16 @@
 
 #include <stdio.h>
 #include "minuint.h"
-#include "first.h"
+#include "nkobject.h"
 
 
 int main()
 {
+    nkObject* obj;
+    printf("this is nkobject test.\n");
+    obj = XNewObject(nkObject);
 
-    printf("this is my first test.\n");
-    mu_assert("test hoge failed", hoge());
+    mu_assert("test hoge failed", obj);
     printf("done.\n");
     return 0;
 }

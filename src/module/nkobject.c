@@ -1,9 +1,17 @@
 
+#include "nkobject.h"
 
-#include "first.h"
-
-int hoge(void)
+nkObject*
+_XNewObject(size)
+    int size;
 {
-    return 1;
+
+}
+
+void 
+_XDeleteObject(p)
+    nkObject* p;
+{
+
 }
 
