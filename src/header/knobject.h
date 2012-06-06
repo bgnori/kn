@@ -6,7 +6,7 @@ typedef int knObject;
 
 #define XNewObject(TYPE) ((TYPE*)_XNewknObject((sizeof(TYPE))))
 knObject* _XNewknObject(int size);
-#define XDeleteknObject(self) _XDeleteObject((knObject*)(self))
+#define XDeleteknObject(self) _XDeleteknObject((knObject*)(self))
 void _XDeleteknObject(knObject* p);
 
 #endif

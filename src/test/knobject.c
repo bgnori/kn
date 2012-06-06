@@ -11,6 +11,7 @@ int main()
     obj = XNewObject(knObject);
 
     mu_assert("test hoge failed", obj);
+    XDeleteknObject(obj);
     printf("done.\n");
     return 0;
 }
