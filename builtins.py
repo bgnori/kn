@@ -5,7 +5,7 @@ builtins = {}
 
 def builtin(name):
     def decorated(f):
-        def adapter(item, environ):
+        def adapter(item):
             return f(*item)
         builtins[name] = adapter
         return adapter

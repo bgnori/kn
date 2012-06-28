@@ -4,81 +4,99 @@ import sys
 
 from builtins import builtins
 
-specials = {"let":None, "quote":None, "defn": None}
-
-
 
 class Evaluator:
-    pass
+    specialForms = ("let", "quote", "defn")
 
+    def __init__(self, env):
+        self.env = env
 
-def handle_special(item, environ):
-    if item[0] == 'let':
+    def handleSpecialForms(self, item):
+        handler = getattr(self, item[0])
+        return handler(item)
+
+    def let(self, item):
         name = item[1]
-        value = item[2]
-        environ[name]=value #FIXME
-    elif item[0] == 'quote':
+        value = self.eval(item[2])
+        self.define(name, value)
+        return None
+
+    def quote(self, item):
         return item[1]
-    elif item[0] == 'defn':
+
+    def defn(self, item):
         params = item[2]
         body = item[3]
-        def foo(item, environ):
-            scope = dict(zip(params, item))
-            r = myeval(body, scope) #FIXME
+        def foo(item):
+            for k, v in dict(zip(params, item)).iteritems():
+                self.define(k, v)
+            r = self.eval(body) #, scope) #FIXME
             return r
-        environ[item[1]] = foo
-    else:
-        pass
+        self.define(item[1], foo)
 
-    return None
+    def resolve(self, name):
+        return self.env.get(name, None)
 
-def call(item, environ):
-    if len(item) == 0:
-        return 
-    name = item[0]
-    args = item[1:]
+    def define(self, name, obj):
+        self.env[name] = obj
+        return None
 
-    func = environ.get(name, None)
-    if not func:
-        func = builtins.get(name, None)
 
-    if not func:
-        print "No such function"
-        print environ
-        sys.exit(1)
-    
-    myevaled = [myeval(item, environ) for item in args]
-
-    return func(myevaled, environ)
-
-def new(d, environ):
-    return dict([(k, myeval(v, environ)) for k, v in d.iteritems()])
-
-def myeval(item, environ):
-    if isinstance(item, list):
+    def call(self, item):
         if len(item) == 0:
-            return []
-        elif item[0] in specials:
-            return handle_special(item, environ)
-        else:
-            return call(item, environ)
+            return 
+        name = item[0]
+        args = item[1:]
 
-    elif isinstance(item, dict):
-        return new(item, environ)
+        func = self.resolve(name)
+        if not func:
+            func = builtins.get(name, None)
 
-    elif isinstance(item, int):
-        return item
-    elif isinstance(item, str):
-        if item[0] in ('"', "'"):
+        if not func:
+            print "No such function"
+            print self.evn
+            sys.exit(1)
+        
+        myevaled = [self.eval(item) for item in args]
+
+        return func(myevaled)
+
+    def mapping(self, d):
+        return dict([(k, self.eval(v)) for k, v in d.iteritems()])
+
+    def eval(self, item):
+        if False:
+            pass
+        elif isinstance(item, str):
+            if item[0] in ('"', "'"):
+                return item.strip(""""'""")
+            else:
+                return self.resolve(item)
+        elif isinstance(item, list):
+            if len(item) == 0:
+                return item
+            elif item[0] in self.specialForms:
+                return self.handleSpecialForms(item)
+            else:
+                return self.call(item)
+
+        elif isinstance(item, dict):
+            return self.mapping(item)
+
+        elif isinstance(item, int):
             return item
         else:
-            return environ[item]
-    else:
-        pass
+            pass
+
+    def run(self, s):
+        ast = yaml.load(s)
+        #print ast
+        return self.eval(ast)
 
 
-environ = {}
+
 '''
+class Parser:
 with open(sys.argv[1]) as f:
     src = yaml.load(f)
     print src

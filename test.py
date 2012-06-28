@@ -9,46 +9,52 @@ class TestEvaluator(unittest.TestCase):
     def setUp(self):
         self.ev = Evaluator({})
 
+    def assertIsNone(self, v):
+        self.assertEqual(v, None)
+
 class TestBasicValues(TestEvaluator):
     def test_empty(self):
-        self.assertIsNone(self.ev.eval(""))
+        self.assertIsNone(self.ev.run(""))
 
     def test_int(self):
-        self.assertEqual(self.ev.eval("1"), 1)
+        self.assertEqual(self.ev.run("1"), 1)
 
     def test_str(self):
-        self.assertEqual(self.ev.eval("'str'"), 'str')
+        self.assertEqual(self.ev.run("""'"str"'"""), 'str')
 
     def test_dict(self):
-        self.assertEqual(self.ev.eval("{a:1, b: 2}"), {"a": 1, "b": 2})
+        self.assertEqual(self.ev.run("{a: 1, b: 2}"), {"a": 1, "b": 2})
 
 
 class TestBuiltin(TestEvaluator):
     def test_add(self):
-        self.assertEqual(self.ev.eval("[+, 1, 2]"), 3)
+        self.assertEqual(self.ev.run("[+, 1, 2]"), 3)
 
     def test_sub(self):
-        self.assertEqual(self.ev.eval("[-, 1, 2]"), -1)
+        self.assertEqual(self.ev.run("[-, 1, 2]"), -1)
 
-    def test_mul(self):
-        self.assertEqual(self.ev.eval("[*, 1, 2]"), 2)
+    def xtest_mul(self):
+        '''
+            we can't have "[* ..." in yaml
+        '''
+        self.assertEqual(self.ev.run("[*, 1, 2]"), 2)
 
 
 class TestSpecialForms(TestEvaluator):
     def test_let(self):
-        self.assertEqual(self.ev.eval("[let, one, 1]"), None)
-        self.assertEqual(self.ev.eval("one"), 1)
+        self.assertEqual(self.ev.run("[let, one, 1]"), None)
+        self.assertEqual(self.ev.run("one"), 1)
 
     def test_quote(self):
-        self.assertEqual(self.ev.eval("[quote, [1, 2, 3]]"), [1, 2, 3])
+        self.assertEqual(self.ev.run("[quote, [1, 2, 3]]"), [1, 2, 3])
 
     def test_defn_1(self):
-        self.assertEqual(self.ev.eval("[defn, inc, [x], [+, x, 1]]"), None)
-        self.assertEqual(self.ev.eval("[inc, 1]"), 2)
+        self.assertEqual(self.ev.run("[defn, inc, [x], [+, x, 1]]"), None)
+        self.assertEqual(self.ev.run("[inc, 1]"), 2)
 
     def test_defn_2(self):
-        self.assertEqual(self.ev.eval("[defn, sum, [x, y], [+, x, 1]]"), None)
-        self.assertEqual(self.ev.eval("[sum, 1, 2]"), 3)
+        self.assertEqual(self.ev.run("[defn, sum, [x, y], [+, x, y]]"), None)
+        self.assertEqual(self.ev.run("[sum, 1, 2]"), 3)
 
 
 if __name__ == '__main__':

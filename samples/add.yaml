@@ -9,7 +9,7 @@
 - [quote, [1, 2, 3 ]]
 - {a: 1, b: 2}
 - {a: ten, b: [+, one, ten]}
-- [defn, foo, [x], [[+, x, 1]]]
+- [defn, foo, [x], [+, x, 1]]
 - [foo, 12]
-- [defn, sum, [x, y], [[+, x, y]]]
+- [defn, sum, [x, y], [+, x, y]]
 - [sum, 3, 5]
