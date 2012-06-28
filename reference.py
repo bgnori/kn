@@ -4,8 +4,20 @@ import sys
 
 from builtins import builtins
 
+specials = {"let":None, "quote":None}
 
 
+def handle_special(item, environ):
+    if item[0] == 'let':
+        name = item[1]
+        value = item[2]
+        environ[name]=value #FIXME
+    elif item[0] == 'quote':
+        return item[1]
+    else:
+        pass
+
+    return None
 
 def call(item, environ):
     if len(item) == 0:
@@ -25,16 +37,27 @@ def call(item, environ):
 
     return func(*evaled)
 
+def define(d, environ):
+    pass
 
 def eval(item, environ):
     if isinstance(item, list):
-        return call(item, environ)
+        if len(item) == 0:
+            return []
+        elif item[0] in specials:
+            return handle_special(item, environ)
+        else:
+            return call(item, environ)
+
     elif isinstance(item, dict):
         return define(item, environ)
     elif isinstance(item, int):
         return item
     elif isinstance(item, str):
-        return item
+        if item[0] in ('"', "'"):
+            return item
+        else:
+            return environ[item]
     else:
         pass
 
