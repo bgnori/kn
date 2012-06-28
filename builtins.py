@@ -5,8 +5,10 @@ builtins = {}
 
 def builtin(name):
     def decorated(f):
-        builtins[name] = f
-        return f
+        def adapter(item, environ):
+            return f(*item)
+        builtins[name] = adapter
+        return adapter
     return decorated
 
 @builtin('+')
@@ -24,5 +26,4 @@ def mul(x, y):
 @builtin('/')
 def div(x, y):
   return x / y
-
 

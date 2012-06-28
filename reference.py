@@ -4,7 +4,10 @@ import sys
 
 from builtins import builtins
 
-specials = {"let":None, "quote":None}
+specials = {"let":None, "quote":None, "defn": None}
+
+
+
 
 
 def handle_special(item, environ):
@@ -14,6 +17,15 @@ def handle_special(item, environ):
         environ[name]=value #FIXME
     elif item[0] == 'quote':
         return item[1]
+    elif item[0] == 'defn':
+        params = item[2]
+        body = item[3]
+        def foo(item, environ):
+            scope = dict(zip(params, item))
+            for b in body:
+                r = myeval(b, scope) #FIXME
+            return r
+        environ[item[1]] = foo
     else:
         pass
 
@@ -31,16 +43,17 @@ def call(item, environ):
 
     if not func:
         print "No such function"
+        print environ
         sys.exit(1)
     
-    evaled = [eval(item, environ) for item in args]
+    myevaled = [myeval(item, environ) for item in args]
 
-    return func(*evaled)
+    return func(myevaled, environ)
 
 def new(d, environ):
-    return dict([(k, eval(v, environ)) for k, v in d.iteritems()])
+    return dict([(k, myeval(v, environ)) for k, v in d.iteritems()])
 
-def eval(item, environ):
+def myeval(item, environ):
     if isinstance(item, list):
         if len(item) == 0:
             return []
@@ -69,5 +82,5 @@ with open(sys.argv[1]) as f:
     print src
 
     for item in src:
-        print eval(item, environ)
+        print myeval(item, environ)
 

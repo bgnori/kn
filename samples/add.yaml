@@ -4,7 +4,12 @@
 - [+, 1, [+, 2, 3]]
 - [let, one, 1]
 - one
+- [let, ten, 10]
 - [+, one, 2]
 - [quote, [1, 2, 3 ]]
 - {a: 1, b: 2}
-- {a: one, b: [+, one, one]}
+- {a: ten, b: [+, one, ten]}
+- [defn, foo, [x], [[+, x, 1]]]
+- [foo, 12]
+- [defn, sum, [x, y], [[+, x, y]]]
+- [sum, 3, 5]
