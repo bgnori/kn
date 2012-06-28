@@ -8,6 +8,8 @@ specials = {"let":None, "quote":None, "defn": None}
 
 
 
+class Evaluator:
+    pass
 
 
 def handle_special(item, environ):
@@ -22,8 +24,7 @@ def handle_special(item, environ):
         body = item[3]
         def foo(item, environ):
             scope = dict(zip(params, item))
-            for b in body:
-                r = myeval(b, scope) #FIXME
+            r = myeval(body, scope) #FIXME
             return r
         environ[item[1]] = foo
     else:
@@ -77,6 +78,7 @@ def myeval(item, environ):
 
 
 environ = {}
+'''
 with open(sys.argv[1]) as f:
     src = yaml.load(f)
     print src
@@ -84,3 +86,4 @@ with open(sys.argv[1]) as f:
     for item in src:
         print myeval(item, environ)
 
+'''
