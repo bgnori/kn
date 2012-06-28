@@ -21,7 +21,9 @@ def call(item, environ):
         print "No such function"
         sys.exit(1)
     
-    return func(*args)
+    evaled = [eval(item, environ) for item in args]
+
+    return func(*evaled)
 
 
 def eval(item, environ):
