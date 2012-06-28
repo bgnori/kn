@@ -37,8 +37,8 @@ def call(item, environ):
 
     return func(*evaled)
 
-def define(d, environ):
-    pass
+def new(d, environ):
+    return dict([(k, eval(v, environ)) for k, v in d.iteritems()])
 
 def eval(item, environ):
     if isinstance(item, list):
@@ -50,7 +50,8 @@ def eval(item, environ):
             return call(item, environ)
 
     elif isinstance(item, dict):
-        return define(item, environ)
+        return new(item, environ)
+
     elif isinstance(item, int):
         return item
     elif isinstance(item, str):
