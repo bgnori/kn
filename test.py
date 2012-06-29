@@ -42,8 +42,7 @@ class TestBuiltin(TestEvaluator):
 
 class TestSpecialForms(TestEvaluator):
     def test_let(self):
-        self.assertEqual(self.ev.run("[let, one, 1]"), None)
-        self.assertEqual(self.ev.run("one"), 1)
+        self.assertEqual(self.ev.run("[let, one, 1, one]"), 1)
 
     def test_quote(self):
         self.assertEqual(self.ev.run("[quote, [1, 2, 3]]"), [1, 2, 3])

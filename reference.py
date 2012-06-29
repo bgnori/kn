@@ -4,29 +4,98 @@ import sys
 
 from builtins import builtins
 
+class Scope:
+    def __init__(self, initial):
+        self.map = initial
+
+    def define(self, identifier, obj):
+        self.map[identifier] = obj
+
+    def resolve(self, identifier):
+        return self.map[identifier]
+
+    def clone(self):
+        return dict(self.map)
+
+class Frame: #UGH! bad name, may be.
+    def __init__(self, initial=None):
+        self.scopes = []
+        if initial is None:
+            initial = {}
+        self.push(Scope(initial))
+
+    def push(self, scope):
+        self.scopes.append(scope)
+
+    def pop(self):
+        self.scopes.pop(-1)
+
+    def clone(self):
+        f = Frame()
+        f.scopes = [s.clone() for s in self.scopes]
+        return f
+
+    def define(self, identifier, obj):
+        s = self.scopes[-1]
+        s.define(identifier, obj)
+
+    def resolve(self, identifier):
+        '''
+            searchs identifier from top scope to bottom scope
+        '''
+        for scope in reversed(self.scopes):
+            try:
+                obj = scope.resolve(identifier)
+            except KeyError:
+                pass
+        try:
+            return obj
+        except UnboundLocalError:
+            raise KeyError(identifier)
+
 
 class Evaluator:
     specialForms = ("let", "quote", "defn")
 
-    def __init__(self, env):
-        self.env = env
+    def __init__(self, env=None):
+        self.frames = []
+        if env is None:
+            env = {}
+        self.new_frame(env)
+
+    def top_frame(self):
+        return self.frames[-1]
+
+    def new_frame(self, initial):
+        self.frames.append(Frame(initial))
+
+    def pop_frame(self):
+        self.frames.pop(-1)
+
+    def clone_e(self):
+        e = [f.clone() for f in self.frames]
+        return e
 
     def handleSpecialForms(self, item):
-        handler = getattr(self, item[0])
+        handler = getattr(self, "handle_"+item[0])
         return handler(item)
 
-    def let(self, item):
+    def handle_let(self, item):
+        self.top_frame().push(Scope({})) #FIXME
         name = item[1]
         value = self.eval(item[2])
         self.define(name, value)
-        return None
+        v = self.eval(item[3])
+        self.top_frame().pop()
+        return v
 
-    def quote(self, item):
+    def handle_quote(self, item):
         return item[1]
 
-    def defn(self, item):
+    def handle_defn(self, item):
         params = item[2]
         body = item[3]
+        e = self.clone_e()
         def foo(item):
             for k, v in dict(zip(params, item)).iteritems():
                 self.define(k, v)
@@ -35,10 +104,10 @@ class Evaluator:
         self.define(item[1], foo)
 
     def resolve(self, name):
-        return self.env.get(name, None)
+        return self.top_frame().resolve(name)
 
     def define(self, name, obj):
-        self.env[name] = obj
+        self.top_frame().define(name, obj)
         return None
 
 
@@ -48,7 +117,10 @@ class Evaluator:
         name = item[0]
         args = item[1:]
 
-        func = self.resolve(name)
+        try:
+            func = self.resolve(name)
+        except KeyError:
+            func = None
         if not func:
             func = builtins.get(name, None)
 
@@ -59,7 +131,10 @@ class Evaluator:
         
         myevaled = [self.eval(item) for item in args]
 
-        return func(myevaled)
+        self.new_frame({})
+        v = func(myevaled)
+
+        return v
 
     def mapping(self, d):
         return dict([(k, self.eval(v)) for k, v in d.iteritems()])
@@ -92,16 +167,3 @@ class Evaluator:
         ast = yaml.load(s)
         #print ast
         return self.eval(ast)
-
-
-
-'''
-class Parser:
-with open(sys.argv[1]) as f:
-    src = yaml.load(f)
-    print src
-
-    for item in src:
-        print myeval(item, environ)
-
-'''
