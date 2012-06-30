@@ -56,5 +56,13 @@ class TestSpecialForms(TestEvaluator):
         self.assertEqual(self.ev.run("[sum, 1, 2]"), 3)
 
 
+class TestClosure(TestEvaluator):
+    def test_let(self):
+        self.assertEqual(self.ev.run("[let, one, 1, one]"), 1)
+    
+    
+
+
+
 if __name__ == '__main__':
     unittest.main()
