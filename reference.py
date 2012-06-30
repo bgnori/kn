@@ -10,6 +10,10 @@ class Scope:
         self.blocks = []
         self.push(initial)
 
+    def dump(self):
+        for b in reversed(self.blocks):
+            print b
+
     def clone(self):
         x = Scope()
         x.blocks = [dict(b) for b in self.blocks]
@@ -47,8 +51,6 @@ class Scope:
             return obj
         except UnboundLocalError:
             raise KeyError(identifier)
-
-
 
 
 class Evaluator:
@@ -132,7 +134,9 @@ class Evaluator:
             obj = self.resolve(item[0])
         except:
             print "No such identifier"
-            print self.scope
+            print item[0]
+            print type(item[0])
+            self.scope.dump()
             raise
 
         if isinstance(obj, dict) and \
@@ -165,5 +169,8 @@ class Evaluator:
 
     def run(self, s):
         ast = yaml.load(s)
-        #print ast
+        print ast
         return self.eval(ast)
+
+
+
