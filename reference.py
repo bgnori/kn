@@ -54,7 +54,7 @@ class Scope:
 
 
 class Evaluator:
-    specialForms = ("let", "quote", "defn")
+    specialForms = ("let", "quote", "fn", "defn", "define")
 
     def __init__(self, env=None):
         if env is None:
@@ -64,6 +64,11 @@ class Evaluator:
     def handleSpecialForms(self, item):
         handler = getattr(self, "handle_"+item[0])
         return handler(item)
+
+    def handle_define(self, item):
+        name = item[1]
+        value = self.eval(item[2])
+        self.define(name, value)
 
     def handle_let(self, item):
         self.scope.push()
@@ -76,6 +81,14 @@ class Evaluator:
 
     def handle_quote(self, item):
         return item[1]
+
+    def handle_fn(self, item):
+        d = {
+                "__scope__": self.scope.clone(),
+                "__param__": item[1],
+                "__body__": item[2],
+        }
+        return d
 
     def handle_defn(self, item):
         d = {
@@ -113,51 +126,48 @@ class Evaluator:
         if item[0] in ('"', "'"):
             return item.strip(""""'""")
         else:
-            return self.resolve(item)
+            try:
+                return self.resolve(item)
+            except:
+                print "No such identifier"
+                print item[0]
+                print type(item[0])
+                self.scope.dump()
+                raise
+
 
     def eval_list(self, item):
         assert isinstance(item, list)
+    
+        if isinstance(item[0], str):
+            if item[0] in self.specialForms:
+                return self.handleSpecialForms(item)
 
-        if len(item) == 0:
-            return item
+            if item[0] in builtins:
+                obj = builtins[item[0]]
+                args = item[1:]
+                myevaled = [self.eval(item) for item in args]
+                return obj(myevaled)
 
-        if item[0] in self.specialForms:
-            return self.handleSpecialForms(item)
+        v = self.eval(item[0])
+        return self.apply(v, item[1:])
 
-        if item[0] in builtins:
-            obj = builtins[item[0]]
-            args = item[1:]
-            myevaled = [self.eval(item) for item in args]
-            return obj(myevaled)
+    def callable(self, obj):
+        return "__scope__" in obj and "__param__" in obj and "__body__" in obj
 
-        try:
-            obj = self.resolve(item[0])
-        except:
-            print "No such identifier"
-            print item[0]
-            print type(item[0])
-            self.scope.dump()
+    def apply(self, obj, args):
+        if not self.callable(obj):
             raise
-
-        if isinstance(obj, dict) and \
-            "__scope__" in obj and \
-            "__param__" in obj and \
-            "__body__" in obj:
-            args = item[1:]
-            myevaled = [self.eval(a) for a in args]
-
-            v = self.call_object(obj, myevaled)
-            return v
-
-        return [self.eval(v) for v in item]
+        myevaled = [self.eval(a) for a in args]
+        v = self.call_object(obj, myevaled)
+        return v
 
     def call_object(self, obj, args):
-
-        s = self.swap(obj["__scope__"])
+        s = self.swap(obj["__scope__"]) #setup scope for callee
         for k, v in dict(zip(obj["__param__"], args)).iteritems():
             self.define(k, v)
         r = self.eval(obj["__body__"])
-        self.swap(s)
+        self.swap(s) #rewind back scope to caller
         return r
 
     def eval_dict(self, item):
@@ -169,8 +179,5 @@ class Evaluator:
 
     def run(self, s):
         ast = yaml.load(s)
-        print ast
         return self.eval(ast)
-
-
 
