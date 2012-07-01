@@ -1,9 +1,9 @@
 
 
-from reference import Evaluator
+from kn.core import Evaluator
 
 
-import unittest
+import unittest2 as unittest
 
 class TestEvaluator(unittest.TestCase):
     def setUp(self):
@@ -11,6 +11,7 @@ class TestEvaluator(unittest.TestCase):
 
     def assertIsNone(self, v):
         self.assertEqual(v, None)
+    
 
 class TestBasicValues(TestEvaluator):
     def test_empty(self):
