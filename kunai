@@ -21,8 +21,11 @@ if m.script is None:
     print '>>',
     input = sys.stdin.readline()
     while input:
-        v = ev.run(input)
-        print v
+        try:
+            v = ev.run(input)
+            print v
+        except Exception, e:
+            print e
         print '>>',
         input = sys.stdin.readline()
 else:
