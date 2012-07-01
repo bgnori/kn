@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include "minuint.h"
 #include "knobject.h"

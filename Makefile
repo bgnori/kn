@@ -1,29 +1,53 @@
 
-header = src/header
-modules = build/module
+.PHONY: clean test
 
-tests = test/first.log test/knobject.log 
+CC = clang
+SUFFIXES = .test .o .c .h .log
 
-test:  $(tests)
+header_path = src/header
+src_path = src/module
+module_path = build/module
+test_path = build/test
 
-clean:
-	rm test/*; rm build/test/*; rm build/module/*
+MODULES = first.o knobject.o kngc.o knstring.o
+SRC = $(MODULES:%.o=%.c)
+HDR = $(MODULES:%.o=%.h)
+TEST = $(MODULES:%.o=%.test)
+LOG = $(MODULES:%.o=%.log)
 
-build/module/first.o: src/module/first.c
-	gcc -I$(header) -c src/module/first.c -o build/module/first.o
 
-build/test/first: src/test/first.c src/test/minuint.h build/module/first.o src/header/first.h
-	gcc -I$(header) -L$(modules) src/test/first.c -o build/test/first build/module/first.o
+vpath %.log test
+vpath %.o build/module
+vpath %.c src/module src/test
+vpath %.test build/test
+vpath %.h src/header
 
-test/first.log: build/test/first
-	./build/test/first >& test/first.log
 
-build/module/knobject.o: src/module/knobject.c
-	gcc -I$(header) -c src/module/knobject.c -o build/module/knobject.o
+test:  $(LOG)
 
-build/test/knobject: src/test/knobject.c src/test/minuint.h build/module/knobject.o src/header/knobject.h
-	gcc -I$(header) -L$(modules) src/test/knobject.c -o build/test/knobject build/module/knobject.o
+clean: clean_log clean_test clean_obj
 
-test/knobject.log: build/test/knobject
-	./build/test/knobject >& test/knobject.log
+clean_log:
+	-$(RM) test/*.log;
+
+clean_test:
+	-$(RM) build/test/*.test;
+
+clean_mod:
+	-$(RM) build/module/*.o
+
+
+$(MODULES): $(@:.o=%.c) $(@:%.o=%.h)
+	gcc -I$(header_path) -c $(src_path)/$< -o $(module_path)/$@
+
+.test.o:
+	gcc -I$(header_path) -L$(module_path) -o $(test_path)/$@ src/test/$< build/module/*.o
+
+
+$(LOG): $(@:.log=%.test)
+	./build/test/$< >& test/$@
+
+build/module/peer.o: src/module/peer.c src/header/peer.h
+	gcc -I$(header_path) -c src/module/peer.c -o build/module/peer.o
+
 
