@@ -1,8 +1,8 @@
 
-import yaml
 import sys
+import yaml
 
-from builtins import builtins
+from kn.builtins import builtins
 
 
 class Scope:

@@ -1,10 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 
-from reference import Evaluator
+from kn.core import Evaluator
 from argparse import ArgumentParser
 
 import sys
+import yaml
 
 parser = ArgumentParser(description="Starting kn. kn is yaml based lisp like thing...")
 
@@ -17,7 +18,13 @@ m = parser.parse_args()
 ev = Evaluator()
 
 if m.script is None:
-    ev.run(sys.stdin)
+    print '>>',
+    input = sys.stdin.readline()
+    while input:
+        v = ev.run(input)
+        print v
+        print '>>',
+        input = sys.stdin.readline()
 else:
     with open(m.script) as f:
         ev.run(f)
