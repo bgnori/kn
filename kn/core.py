@@ -5,6 +5,16 @@ import yaml
 from kn.builtins import builtins
 
 
+class RuntimeError(Exception):
+    pass
+
+class UnboundError(RuntimeError):
+    pass
+
+class NotInvokableError(RuntimeError):
+    pass
+
+
 class Scope:
     def __init__(self, initial=None):
         self.blocks = []
@@ -128,12 +138,12 @@ class Evaluator:
         else:
             try:
                 return self.resolve(item)
-            except:
+            except KeyError:
                 print "No such identifier"
                 print item[0]
                 print type(item[0])
                 self.scope.dump()
-                raise
+                raise UnboundError
 
 
     def eval_list(self, item):
@@ -153,11 +163,11 @@ class Evaluator:
         return self.apply(v, item[1:])
 
     def callable(self, obj):
-        return "__scope__" in obj and "__param__" in obj and "__body__" in obj
+        return isinstance(obj, dict) and "__scope__" in obj and "__param__" in obj and "__body__" in obj
 
     def apply(self, obj, args):
         if not self.callable(obj):
-            raise
+            raise NotInvokableError
         myevaled = [self.eval(a) for a in args]
         v = self.call_object(obj, myevaled)
         return v

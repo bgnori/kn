@@ -1,16 +1,24 @@
 
 
 from kn.core import Evaluator
+from kn.core import NotInvokableError, UnboundError, RuntimeError
+
 
 
 import unittest2 as unittest
 
+class TestSmoke(unittest.TestCase):
+    def test_new_without_param(self):
+        e = Evaluator()
+        self.assertEqual(e.scope.top(), {})
+
+    def test_new_with_param(self):
+        e = Evaluator({1: 1})
+        self.assertEqual(e.scope.top(), {1:1})
+
 class TestEvaluator(unittest.TestCase):
     def setUp(self):
         self.ev = Evaluator({})
-
-    def assertIsNone(self, v):
-        self.assertEqual(v, None)
     
 
 class TestBasicValues(TestEvaluator):
@@ -20,17 +28,21 @@ class TestBasicValues(TestEvaluator):
     def test_int(self):
         self.assertEqual(self.ev.run("1"), 1)
 
+    def test_identifier(self):
+        self.assertRaises(UnboundError, self.ev.run, "str")
+
+    def test_str(self):
+        self.assertEqual(self.ev.run("""'"str"'"""), 'str')
+
     def test_str(self):
         self.assertEqual(self.ev.run("""'"str"'"""), 'str')
 
     def test_dict(self):
         self.assertEqual(self.ev.run("{a: 1, b: 2}"), {"a": 1, "b": 2})
 
-    def xtest_list_int(self):
-        '''
-            must fail. 
-        '''
-        self.assertEqual(self.ev.run("[1]"), [1])
+    def test_list_int(self):
+        self.assertRaises(NotInvokableError, self.ev.run, "[1]")
+
 
 class TestBuiltin(TestEvaluator):
     def test_add(self):
@@ -69,6 +81,8 @@ class TestSpecialForms(TestEvaluator):
         self.assertEqual(self.ev.run("[[fn, [x], [+, x, 1]], 2]"), 3)
 
 class TestClosure(TestEvaluator):
+    def test_invoke(self):
+        self.assertRaises(NotInvokableError, self.ev.run, "[{}]")
 
     def test_inplace_call_with_fn(self):
         self.assertEqual(self.ev.run("[[fn, [x], [+, x, 1]], 2]"), 3)
