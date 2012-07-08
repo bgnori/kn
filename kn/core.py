@@ -14,6 +14,12 @@ class UnboundError(RuntimeError):
 class NotInvokableError(RuntimeError):
     pass
 
+class String:
+    def __init__(self, v):
+        self.v = v
+
+    def value(self):
+        return self.v
 
 
 class Scope:
@@ -65,7 +71,7 @@ class Scope:
 
 
 class Evaluator:
-    specialForms = ("let", "quote", "fn", "defn", "define")
+    specialForms = ("let", "quote", "fn", "defn", "define", "eval", "parse")
 
     def __init__(self, env=None):
         if env is None:
@@ -110,6 +116,17 @@ class Evaluator:
                 "__body__": item[3],
         }
         self.define(item[1], d)
+
+    def handle_parse(self, item):
+        ''' not special form should be builtin. '''
+        v = self.eval(item[1])
+        ast = yaml.load(v)
+        return ast
+
+    def handle_eval(self, item):
+        ''' not special form should be builtin. '''
+        v = self.eval(item[1])
+        return self.eval(v)
 
     def swap(self, scope):
         s = self.scope 

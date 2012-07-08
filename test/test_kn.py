@@ -61,6 +61,17 @@ class TestBuiltin(TestEvaluator):
         '''
         self.assertEqual(self.ev.run("[*, 1, 2]"), 2)
 
+    def test_file(self):
+        self.ev.run("""[define, f, [open, '"hello.yaml"']]""")
+        self.assertEqual(self.ev.run("[read, f]"), "[hello, kn!]\n")
+        self.ev.run("[close, f]")
+
+    def test_eval(self):
+        self.ev.run("""[define, f, [open, '"common.yaml"']]""")
+        self.ev.run("[define, toload, [read, f]]")
+        self.ev.run("[close, f]")
+        self.ev.run("[prn, toload]")
+        self.ev.run("[eval, [parse, toload]]")
 
 class TestSpecialForms(TestEvaluator):
     def test_let(self):
@@ -84,11 +95,6 @@ class TestSpecialForms(TestEvaluator):
     def test_inplace_call_with_fn(self):
         self.assertEqual(self.ev.run("[[fn, [x], [+, x, 1]], 2]"), 3)
 
-class TestClosure(TestEvaluator):
-    def test_open(self):
-        self.ev.run("[define, f, [open, common.yaml]]")
-        self.assertEqual(self.ev.run("[read, f]"), "hello, kn!")
-        self.ev.run("[close, f]")
 
 class TestClosure(TestEvaluator):
     def test_invoke(self):
@@ -100,6 +106,17 @@ class TestClosure(TestEvaluator):
     def test_recursion(self):
         self.ev.run("[defn, fib, [x], [if, [eq, x, 0], 1, [if, [eq, x, 1], 1, [+, [fib, [-, x, -2]], [fib, [-, x, 1]]]]]]")
         self.assertEqual(self.ev.run("[fib, 2]"), 3)
+
+
+class TestWthLibrary(unittest.TestCase):
+    def setUp(self):
+        self.ev = Evaluator({})
+        self.ev.run("[define, f, [open, common.yaml]]")
+        self.ev.run("[define, toload, [read, f]]")
+        self.ev.run("[close, f]")
+        self.ev.run("[eval, toload]")
+
+
 
 if __name__ == '__main__':
     unittest.main()
