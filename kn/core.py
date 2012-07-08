@@ -15,6 +15,7 @@ class NotInvokableError(RuntimeError):
     pass
 
 
+
 class Scope:
     def __init__(self, initial=None):
         self.blocks = []
@@ -70,6 +71,8 @@ class Evaluator:
         if env is None:
             env = {}
         self.scope = Scope(env)
+        
+        self.scope.define("evaluator", self)
 
     def handleSpecialForms(self, item):
         handler = getattr(self, "handle_"+item[0])
@@ -140,8 +143,8 @@ class Evaluator:
                 return self.resolve(item)
             except KeyError:
                 print "No such identifier"
-                print item[0]
-                print type(item[0])
+                print item
+                print type(item)
                 self.scope.dump()
                 raise UnboundError
 

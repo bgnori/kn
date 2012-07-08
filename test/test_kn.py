@@ -8,13 +8,17 @@ from kn.core import NotInvokableError, UnboundError, RuntimeError
 import unittest2 as unittest
 
 class TestSmoke(unittest.TestCase):
+    def assertin(self, d, k):
+        self.assert_(k in d)
+
     def test_new_without_param(self):
         e = Evaluator()
-        self.assertEqual(e.scope.top(), {})
+        self.assertin(e.scope.top(), 'evaluator')
 
     def test_new_with_param(self):
         e = Evaluator({1: 1})
-        self.assertEqual(e.scope.top(), {1:1})
+        self.assertin(e.scope.top(), 'evaluator')
+        self.assertin(e.scope.top(), 1)
 
 class TestEvaluator(unittest.TestCase):
     def setUp(self):
@@ -81,12 +85,22 @@ class TestSpecialForms(TestEvaluator):
         self.assertEqual(self.ev.run("[[fn, [x], [+, x, 1]], 2]"), 3)
 
 class TestClosure(TestEvaluator):
+    def test_open(self):
+        self.ev.run("[define, f, [open, common.yaml]]")
+        self.assertEqual(self.ev.run("[read, f]"), "hello, kn!")
+        self.ev.run("[close, f]")
+
+class TestClosure(TestEvaluator):
     def test_invoke(self):
         self.assertRaises(NotInvokableError, self.ev.run, "[{}]")
 
     def test_inplace_call_with_fn(self):
         self.assertEqual(self.ev.run("[[fn, [x], [+, x, 1]], 2]"), 3)
-    
+
+    def test_recursion(self):
+        self.ev.run("[defn, fib, [x], [if, [eq, x, 0], 1, [if, [eq, x, 1], 1, [+, [fib, [-, x, -2]], [fib, [-, x, 1]]]]]]")
+        self.assertEqual(self.ev.run("[fib, 2]"), 3)
 
 if __name__ == '__main__':
     unittest.main()
+
