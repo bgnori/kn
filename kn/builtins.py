@@ -38,5 +38,4 @@ def tclose(f):
 
 @builtin('read')
 def tread(f):
-    x = f.read()
-    return x 
+    return f.read()

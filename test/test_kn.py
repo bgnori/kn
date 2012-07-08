@@ -67,11 +67,10 @@ class TestBuiltin(TestEvaluator):
         self.ev.run("[close, f]")
 
     def test_eval(self):
-        self.ev.run("""[define, f, [open, '"common.yaml"']]""")
+        self.ev.run("""[define, f, [open, '"test/boo.yaml"']]""")
         self.ev.run("[define, toload, [read, f]]")
         self.ev.run("[close, f]")
-        self.ev.run("[prn, toload]")
-        self.ev.run("[eval, [parse, toload]]")
+        self.assertEqual(self.ev.run("[eval, [parse, toload]]"), 3)
 
 class TestSpecialForms(TestEvaluator):
     def test_let(self):
