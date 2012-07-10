@@ -14,14 +14,6 @@ class UnboundError(RuntimeError):
 class NotInvokableError(RuntimeError):
     pass
 
-class String:
-    def __init__(self, v):
-        self.v = v
-
-    def value(self):
-        return self.v
-
-
 class Scope:
     def __init__(self, initial=None):
         self.blocks = []

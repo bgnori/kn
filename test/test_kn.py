@@ -20,6 +20,7 @@ class TestSmoke(unittest.TestCase):
         self.assertin(e.scope.top(), 'evaluator')
         self.assertin(e.scope.top(), 1)
 
+
 class TestEvaluator(unittest.TestCase):
     def setUp(self):
         self.ev = Evaluator({})
@@ -49,11 +50,20 @@ class TestBasicValues(TestEvaluator):
 
 
 class TestBuiltin(TestEvaluator):
+    def test_prn(self):
+        self.assertEqual(self.ev.run("[prn, 1,]"), None)
+
     def test_add(self):
         self.assertEqual(self.ev.run("[+, 1, 2]"), 3)
 
     def test_sub(self):
         self.assertEqual(self.ev.run("[-, 1, 2]"), -1)
+
+    def test_eq_t(self):
+        self.assertEqual(self.ev.run("[eq, 1, 1]"), True)
+
+    def test_eq_f(self):
+        self.assertEqual(self.ev.run("[eq, 1, 2]"), False)
 
     def xtest_mul(self):
         '''
