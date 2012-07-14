@@ -20,6 +20,14 @@ def prn(evaluator, x):
 def eq(evaluator, x, y):
     return x == y
 
+@make_builtin('gt')
+def sub(evaluator, x, y):
+    return x > y
+
+@make_builtin('le')
+def sub(evaluator, x, y):
+    return x < y
+
 @make_builtin('+')
 def add(evaluator, x, y):
     return x + y
