@@ -1,9 +1,5 @@
-
-
 from kn.core import Evaluator
 from kn.core import NotInvokableError, UnboundError, RuntimeError
-
-
 
 import unittest2 as unittest
 
@@ -64,6 +60,12 @@ class TestBuiltin(TestEvaluator):
 
     def test_eq_f(self):
         self.assertEqual(self.ev.run("[eq, 1, 2]"), False)
+    
+    def test_le(self):
+        self.assertEqual(self.ev.run("[le, 1, 2]"), True)
+
+    def test_gt(self):
+        self.assertEqual(self.ev.run("[gt, 1, 2]"), False)
 
     def test_mul(self):
         '''
@@ -81,6 +83,7 @@ class TestBuiltin(TestEvaluator):
         self.ev.run("[define, toload, [read, f]]")
         self.ev.run("[close, f]")
         self.assertEqual(self.ev.run("[eval, [parse, toload]]"), 3)
+
 
 class TestSpecialForms(TestEvaluator):
     def test_let(self):
@@ -119,6 +122,7 @@ class TestSpecialForms(TestEvaluator):
     def test_if_nested_c(self):
         self.assertEqual(self.ev.run("""[if, 0, '"A"', [if,  0, [would not be evaluated], '"C"']]"""), 'C')
 
+
 class TestClosure(TestEvaluator):
     def test_invoke(self):
         self.assertRaises(NotInvokableError, self.ev.run, "[{}]")
@@ -130,29 +134,58 @@ class TestClosure(TestEvaluator):
         self.ev.run("[defn, fact, [x], [if, [eq, x, 0], 1, [mul, x, [fact, [-, x, 1]]]]]")
         self.assertEqual(self.ev.run("[fact, 5]"), 120)
 
-    def test_recursion_fib_with_define_fn(self):
+    def test_recursion_tarai(self):
+        self.ev.run("""[defn, tarai, [x, y, z], 
+                          [if, [gt, x, y], 
+                            [tarai, [tarai, [-, x, 1], y, z], [tarai, [-, y, 1], z, x], [tarai, [-, z, 1], x, y]],
+                            y]]""")
+        self.assertEqual(self.ev.run("[tarai, 4, 3, 0]"), 4)
+
+
+class TestDefineFnWithFib(TestEvaluator):
+    def setUp(self):
+        super(TestDefineFnWithFib, self).setUp()
         self.ev.run("""[define, fib, [fn, [x], 
                       [if, [eq, x, 1], 
                             1, 
                       [if, [eq, x, 2], 
                             1, 
                            [+, [fib, [-, x, 1]], [fib, [-, x, 2]]]]]]]""")
+
+    def test_1(self):
         self.assertEqual(self.ev.run("[fib, 1]"), 1)
+
+    def test_2(self):
         self.assertEqual(self.ev.run("[fib, 2]"), 1)
-        self.assertEqual(self.ev.run("[fib, [-, 3, 1]]"), 1)
+
+    def test_3(self):
         self.assertEqual(self.ev.run("[fib, 3]"), 2)
+
+    def test_4(self):
         self.assertEqual(self.ev.run("[fib, 4]"), 3)
 
-    def test_recursion_fib_with_defn(self):
+
+class TestDefnWithFib(TestEvaluator):
+    def setUp(self):
+        super(TestDefnWithFib, self).setUp()
         self.ev.run("""[defn, fib, [x], 
                       [if, [eq, x, 1], 
                             1, 
                       [if, [eq, x, 2], 
                             1, 
                            [+, [fib, [-, x, 1]], [fib, [-, x, 2]]]]]]""")
+
+    def test_1(self):
         self.assertEqual(self.ev.run("[fib, 1]"), 1)
+
+    def test_2(self):
         self.assertEqual(self.ev.run("[fib, 2]"), 1)
+
+    def test_3(self):
         self.assertEqual(self.ev.run("[fib, 3]"), 2)
+
+    def test_4(self):
+        self.assertEqual(self.ev.run("[fib, 4]"), 4)
 
 
 class TestWthLibrary(unittest.TestCase):
