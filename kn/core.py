@@ -25,6 +25,11 @@ class Scope:
 
     def clone(self):
         x = Scope()
+        x.blocks = [b for b in self.blocks]
+        return x
+
+    def deep_clone(self):
+        x = Scope()
         x.blocks = [dict(b) for b in self.blocks]
         return x
 
@@ -60,6 +65,7 @@ class Scope:
             return obj
         except UnboundLocalError:
             raise KeyError(identifier)
+
 
 
 class Evaluator:
@@ -191,11 +197,13 @@ class Evaluator:
         if not self.callable(obj):
             raise NotInvokableError
         myevaled = [self.eval(a) for a in args]
+        print obj
+        print args, '-->', myevaled
         v = self.call_object(obj, myevaled)
         return v
 
     def call_object(self, obj, args):
-        s = self.swap(obj["__scope__"]) #setup scope for callee
+        s = self.swap(obj["__scope__"].deep_clone()) #setup scope for callee
         for k, v in dict(zip(obj["__param__"], args)).iteritems():
             self.define(k, v)
         r = self.eval(obj["__body__"])

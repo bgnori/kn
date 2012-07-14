@@ -110,6 +110,14 @@ class TestSpecialForms(TestEvaluator):
     def test_if_f(self):
         self.assertEqual(self.ev.run("""[if, 0, '"True"', '"False"']"""), 'False')
 
+    def test_if_nested_a(self):
+        self.assertEqual(self.ev.run("""[if, 1, '"A"', [if,  1, [would not be evaluated],  [would not be evaluated]]]"""), 'A')
+
+    def test_if_nested_b(self):
+        self.assertEqual(self.ev.run("""[if, 0, '"A"', [if,  1, '"B"',  [would not be evaluated]]]"""), 'B')
+
+    def test_if_nested_c(self):
+        self.assertEqual(self.ev.run("""[if, 0, '"A"', [if,  0, [would not be evaluated], '"C"']]"""), 'C')
 
 class TestClosure(TestEvaluator):
     def test_invoke(self):
@@ -122,9 +130,29 @@ class TestClosure(TestEvaluator):
         self.ev.run("[defn, fact, [x], [if, [eq, x, 0], 1, [mul, x, [fact, [-, x, 1]]]]]")
         self.assertEqual(self.ev.run("[fact, 5]"), 120)
 
-    def xtest_recursion_fib(self):
-        self.ev.run("[defn, fib, [x], [if, [eq, x, 0], 1, [if, [eq, x, 1], 1, [+, [fib, [-, x, -2]], [fib, [-, x, 1]]]]]]")
-        self.assertEqual(self.ev.run("[fib, 2]"), 3)
+    def test_recursion_fib_with_define_fn(self):
+        self.ev.run("""[define, fib, [fn, [x], 
+                      [if, [eq, x, 1], 
+                            1, 
+                      [if, [eq, x, 2], 
+                            1, 
+                           [+, [fib, [-, x, 1]], [fib, [-, x, 2]]]]]]]""")
+        self.assertEqual(self.ev.run("[fib, 1]"), 1)
+        self.assertEqual(self.ev.run("[fib, 2]"), 1)
+        self.assertEqual(self.ev.run("[fib, [-, 3, 1]]"), 1)
+        self.assertEqual(self.ev.run("[fib, 3]"), 2)
+        self.assertEqual(self.ev.run("[fib, 4]"), 3)
+
+    def test_recursion_fib_with_defn(self):
+        self.ev.run("""[defn, fib, [x], 
+                      [if, [eq, x, 1], 
+                            1, 
+                      [if, [eq, x, 2], 
+                            1, 
+                           [+, [fib, [-, x, 1]], [fib, [-, x, 2]]]]]]""")
+        self.assertEqual(self.ev.run("[fib, 1]"), 1)
+        self.assertEqual(self.ev.run("[fib, 2]"), 1)
+        self.assertEqual(self.ev.run("[fib, 3]"), 2)
 
 
 class TestWthLibrary(unittest.TestCase):
