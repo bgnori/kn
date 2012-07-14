@@ -2,7 +2,7 @@
 import sys
 import yaml
 
-from kn.builtins import builtins
+from kn.builtins import builtins, make_builtin
 
 
 class RuntimeError(Exception):
@@ -63,7 +63,7 @@ class Scope:
 
 
 class Evaluator:
-    specialForms = ("let", "quote", "fn", "defn", "define", "eval", "parse")
+    specialForms = ("let", "quote", "fn", "defn", "define", "if",)
 
     def __init__(self, env=None):
         if env is None:
@@ -93,6 +93,14 @@ class Evaluator:
     def handle_quote(self, item):
         return item[1]
 
+    def handle_if(self, item):
+        cond = self.eval(item[1])
+        if cond: #FIXME !! it maps kn bool to python bool.
+            v = self.eval(item[2])
+        else:
+            v = self.eval(item[3])
+        return v
+
     def handle_fn(self, item):
         d = {
                 "__scope__": self.scope.clone(),
@@ -109,16 +117,15 @@ class Evaluator:
         }
         self.define(item[1], d)
 
-    def handle_parse(self, item):
-        ''' not special form should be builtin. '''
-        v = self.eval(item[1])
-        ast = yaml.load(v)
+
+    @make_builtin("parse")
+    def _parse(self, item):
+        ast = yaml.load(item)
         return ast
 
-    def handle_eval(self, item):
-        ''' not special form should be builtin. '''
-        v = self.eval(item[1])
-        return self.eval(v)
+    @make_builtin("eval")
+    def _eval(self, item):
+        return self.eval(item)
 
     def swap(self, scope):
         s = self.scope 
@@ -155,6 +162,8 @@ class Evaluator:
                 print item
                 print type(item)
                 self.scope.dump()
+                print self.specialForms
+                print builtins
                 raise UnboundError
 
 
@@ -169,7 +178,7 @@ class Evaluator:
                 obj = builtins[item[0]]
                 args = item[1:]
                 myevaled = [self.eval(item) for item in args]
-                return obj(myevaled)
+                return obj(self, myevaled)
 
         v = self.eval(item[0])
         return self.apply(v, item[1:])

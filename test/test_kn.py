@@ -104,6 +104,12 @@ class TestSpecialForms(TestEvaluator):
     def test_inplace_call_with_fn(self):
         self.assertEqual(self.ev.run("[[fn, [x], [+, x, 1]], 2]"), 3)
 
+    def test_if_t(self):
+        self.assertEqual(self.ev.run("""[if, 1, '"True"', '"False"']"""), 'True')
+
+    def test_if_f(self):
+        self.assertEqual(self.ev.run("""[if, 0, '"True"', '"False"']"""), 'False')
+
 
 class TestClosure(TestEvaluator):
     def test_invoke(self):

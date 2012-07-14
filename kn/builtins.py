@@ -3,39 +3,39 @@ import decorator
 
 builtins = {}
 
-def builtin(name):
+def make_builtin(name):
     def decorated(target_function):
-        def adapter(item):
-            return target_function(*item)
+        def adapter(evaluator, item):
+            return target_function(evaluator, *item)
         builtins[name] = adapter
         return adapter
     return decorated
 
-@builtin('prn')
-def prn(x):
+@make_builtin('prn')
+def prn(evaluator, x):
     print x
     return None
 
-@builtin('eq')
-def eq(x, y):
+@make_builtin('eq')
+def eq(evaluator, x, y):
     return x == y
 
-@builtin('+')
-def add(x, y):
+@make_builtin('+')
+def add(evaluator, x, y):
     return x + y
 
-@builtin('-')
-def sub(x, y):
+@make_builtin('-')
+def sub(evaluator, x, y):
     return x - y
 
-@builtin('open')
-def topen(f):
+@make_builtin('open')
+def topen(evaluator, f):
     return open(f)
 
-@builtin('close')
-def tclose(f):
+@make_builtin('close')
+def tclose(evaluator, f):
     return f.close()
 
-@builtin('read')
-def tread(f):
+@make_builtin('read')
+def tread(evaluator, f):
     return f.read()
