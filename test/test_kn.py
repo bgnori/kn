@@ -65,11 +65,11 @@ class TestBuiltin(TestEvaluator):
     def test_eq_f(self):
         self.assertEqual(self.ev.run("[eq, 1, 2]"), False)
 
-    def xtest_mul(self):
+    def test_mul(self):
         '''
             we can't have "[* ..." in yaml
         '''
-        self.assertEqual(self.ev.run("[*, 1, 2]"), 2)
+        self.assertEqual(self.ev.run("[mul, 1, 2]"), 2)
 
     def test_file(self):
         self.ev.run("""[define, f, [open, '"hello.yaml"']]""")
@@ -118,7 +118,11 @@ class TestClosure(TestEvaluator):
     def test_inplace_call_with_fn(self):
         self.assertEqual(self.ev.run("[[fn, [x], [+, x, 1]], 2]"), 3)
 
-    def test_recursion(self):
+    def test_recursion_fact(self):
+        self.ev.run("[defn, fact, [x], [if, [eq, x, 0], 1, [mul, x, [fact, [-, x, 1]]]]]")
+        self.assertEqual(self.ev.run("[fact, 5]"), 120)
+
+    def xtest_recursion_fib(self):
         self.ev.run("[defn, fib, [x], [if, [eq, x, 0], 1, [if, [eq, x, 1], 1, [+, [fib, [-, x, -2]], [fib, [-, x, 1]]]]]]")
         self.assertEqual(self.ev.run("[fib, 2]"), 3)
 

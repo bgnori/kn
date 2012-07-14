@@ -110,12 +110,13 @@ class Evaluator:
         return d
 
     def handle_defn(self, item):
-        d = {
+        d = {}
+        self.define(item[1], d)
+        d.update({
                 "__scope__": self.scope.clone(),
                 "__param__": item[2],
                 "__body__": item[3],
-        }
-        self.define(item[1], d)
+        })
 
 
     @make_builtin("parse")

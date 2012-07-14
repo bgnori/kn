@@ -24,6 +24,10 @@ def eq(evaluator, x, y):
 def add(evaluator, x, y):
     return x + y
 
+@make_builtin('mul')
+def mul(evaluator, x, y):
+    return x * y
+
 @make_builtin('-')
 def sub(evaluator, x, y):
     return x - y
