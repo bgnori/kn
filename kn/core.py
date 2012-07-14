@@ -199,15 +199,15 @@ class Evaluator:
         myevaled = [self.eval(a) for a in args]
         print obj
         print args, '-->', myevaled
-        v = self.call_object(obj, myevaled)
-        return v
 
-    def call_object(self, obj, args):
-        s = self.swap(obj["__scope__"].deep_clone()) #setup scope for callee
-        for k, v in dict(zip(obj["__param__"], args)).iteritems():
-            self.define(k, v)
+        my = obj["__scope__"].deep_clone()
+        my.push(dict(zip(obj["__param__"], myevaled)))
+        s = self.swap(my) #setup scope for callee
+        #for k, v in dict(zip(obj["__param__"], args)).iteritems():
+        #    self.define(k, v)
         r = self.eval(obj["__body__"])
         self.swap(s) #rewind back scope to caller
+        my.pop()
         return r
 
     def eval_dict(self, item):
