@@ -89,6 +89,9 @@ class TestSpecialForms(TestEvaluator):
     def test_let(self):
         self.assertEqual(self.ev.run("[let, one, 1, one]"), 1)
 
+    def test_let_nested(self):
+        self.assertEqual(self.ev.run("""[let, x, 2, [let, x, 1, x]]"""), 1)
+
     def test_quote(self):
         self.assertEqual(self.ev.run("[quote, [1, 2, 3]]"), [1, 2, 3])
 
@@ -185,7 +188,7 @@ class TestDefnWithFib(TestEvaluator):
         self.assertEqual(self.ev.run("[fib, 3]"), 2)
 
     def test_4(self):
-        self.assertEqual(self.ev.run("[fib, 4]"), 4)
+        self.assertEqual(self.ev.run("[fib, 4]"), 3)
 
 
 class TestWthLibrary(unittest.TestCase):

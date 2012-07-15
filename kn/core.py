@@ -28,11 +28,6 @@ class Scope:
         x.blocks = [b for b in self.blocks]
         return x
 
-    def deep_clone(self):
-        x = Scope()
-        x.blocks = [dict(b) for b in self.blocks]
-        return x
-
     def push(self, d=None):
         '''
             creates new scope block. i.e. let 
@@ -41,9 +36,13 @@ class Scope:
             d = {}
         self.blocks.append(d)
 
-    def pop(self):
+    def pop(self, count = None):
         assert self.blocks
-        self.blocks.pop(-1)
+        if count is None:
+            count = 1
+        while count:
+            self.blocks.pop(-1)
+            count -= 1
     
     def top(self):
         assert self.blocks
@@ -58,13 +57,10 @@ class Scope:
         assert self.blocks
         for b in reversed(self.blocks):
             try:
-                obj = b[identifier]
+                return b[identifier]
             except KeyError:
                 pass
-        try:
-            return obj
-        except UnboundLocalError:
-            raise KeyError(identifier)
+        raise KeyError(identifier)
 
 
 
@@ -146,13 +142,20 @@ class Evaluator:
         self.scope.define(name, obj)
 
     def eval(self, item):
+        print 'eval-----', item
+        self.scope.dump()
         type2name = {str:"str", list:"list", dict:"dict", int:"int", type(None):"NoneType"}
 
         t = type(item)
 
         name = type2name[t]
         handler = getattr(self, "eval_" + name)
-        return handler(item)
+        v = handler(item)
+
+        print '===>', v
+        print '---------'
+        print
+        return v
 
     def eval_NoneType(self, itme):
         return None
@@ -196,16 +199,17 @@ class Evaluator:
     def apply(self, obj, args):
         if not self.callable(obj):
             raise NotInvokableError
-        myevaled = [self.eval(a) for a in args]
-        print obj
-        print args, '-->', myevaled
 
-        my = obj["__scope__"].deep_clone()
-        my.push(dict(zip(obj["__param__"], myevaled)))
-        s = self.swap(my) #setup scope for callee
-        #for k, v in dict(zip(obj["__param__"], args)).iteritems():
-        #    self.define(k, v)
+        #setup scope for callee
+        my = obj["__scope__"].clone() #why do I clone?
+
+        #point is "self.eval(a) may cause some effect on scope"
+        my.push(dict(zip(obj["__param__"], [self.eval(a) for a in args])))
+
+        s = self.swap(my) 
+
         r = self.eval(obj["__body__"])
+
         self.swap(s) #rewind back scope to caller
         my.pop()
         return r
