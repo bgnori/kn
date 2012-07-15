@@ -201,7 +201,7 @@ class Evaluator:
             raise NotInvokableError
 
         #setup scope for callee
-        my = obj["__scope__"].clone() #why do I clone?
+        my = obj["__scope__"]
 
         #point is "self.eval(a) may cause some effect on scope"
         my.push(dict(zip(obj["__param__"], [self.eval(a) for a in args])))
