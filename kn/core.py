@@ -112,7 +112,7 @@ class Evaluator:
         return d
 
     def handle_defn(self, item):
-        d = {}
+        d = {} # we need this for recursive definition.
         self.define(item[1], d)
         d.update({
                 "__scope__": self.scope.clone(),
