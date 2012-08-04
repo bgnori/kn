@@ -1,8 +1,12 @@
 
 from decorator import decorator
+import struct
 
+def quad(n):
+  return struct.pack('@q', n),
 
 instructions = {}
+
 
 def bytecode(bytepattern):
   def wrapper(f):
@@ -10,18 +14,33 @@ def bytecode(bytepattern):
     return f
   return wrapper
 
-@bytecode('0')
+OP_STOP = quad(0)
+@bytecode(OP_STOP)
 def stop(vm):
   assert False
 
-@bytecode('1')
+OP_NOP = quad(1)
+@bytecode(OP_NOP)
 def nop(vm):
   print 'this is nop'
   pass
 
-@bytecode('2')
+OP_PRN = quad(2)
+@bytecode(OP_PRN)
 def prn(vm):
   print vm.stack.pop()
+
+
+OP_ZERO = quad(3)
+@bytecode(OP_ZERO)
+def prn(vm):
+  #vm.stack.push(0)
+  vm.stack.append(0)
+
+OP_ONE = quad(4)
+@bytecode(OP_ONE)
+def prn(vm):
+  vm.stack.append(1)
 
 
 class VM:
@@ -32,14 +51,15 @@ class VM:
   
   def run(self):
     op = self.program[self.pc]
-    while(op != '0'):
+    while(op != OP_STOP):
       f = instructions[op]
       f(self)
       self.pc += 1
       op = self.program[self.pc]
 
+p = [OP_ZERO, OP_PRN, OP_STOP]
 
-vm = VM(['1', '0'])
+vm = VM(p)
 
 vm.run()
 
